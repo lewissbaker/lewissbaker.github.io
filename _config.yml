@@ -1,1 +1,19 @@
-theme: jekyll-theme-midnight
+
+# Site settings
+title: Asymmetric Transfer
+author: Lewis Baker
+description: > # this means to ignore newlines until "baseurl:"
+  Some thoughts on programming, C++ and other things.
+
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://lewissbaker.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+
+twitter_username: lewissbaker
+github_username:  lewissbaker
+repository: lewissbaker/lewissbaker.github.io
+
+show_downloads: false
+
+theme: minima
+permalink: /:year/:month/:day/:title
+lang: en-AU
