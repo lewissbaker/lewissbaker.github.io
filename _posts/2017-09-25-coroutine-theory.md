@@ -1,33 +1,32 @@
 ---
 title: Coroutine Theory
 excerpt:
-  This is the first of a series of posts I plan to write on the C++ Coroutines TS
-  that is currently on-track for inclusion into the C++20 standard. In this post
-  I'll cover a bit of theory of C++ Coroutines that will hopefully help frame the
-  way you think about coroutines and their control flow in future posts.
+  In this post I will describe the differences between functions and coroutines
+  and provide a bit of theory about the operations they support. The aim of this post
+  is introduce some foundational concepts that will help frame the way you think about
+  C++ Coroutines.
 ---
-# C++ Coroutines: Coroutine Theory
 
-This is the first of a series of posts I plan to write on the upcoming
-C++ Coroutines proposal that is currently on track for inclusion into
-the C++20 standard.
+This is the first of a series of posts on the [C++ Coroutines TS](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf)
+that is currently on track for inclusion into the C++20 language standard.
 
-In this series I want to cover how the underlying mechanics of C++ Coroutines
+In this series I will cover how the underlying mechanics of C++ Coroutines
 work as well as show how they can be used to build useful higher-level abstractions
 such as those provided by the [cppcoro](https://github.com/lewissbaker/cppcoro)
 library.
 
-However, before I get into the weeds too far, I want to first cover a bit of theory
-about C++ Coroutines that will hopefully help frame the way you think about them
-as you read the subsequent articles.
+In this post I will describe the differences between functions and coroutines
+and provide a bit of theory about the operations they support. The aim of this post
+is introduce some foundational concepts that will help frame the way you think about
+C++ Coroutines.
 
-## Coroutines are functions are coroutines
+## Coroutines are Functions are Coroutines
 
-A coroutine is really just a generalisation of a function.
-Or said another way, a function is really just a special-case of a coroutine.
+A coroutine is a generalisation of a function that allows the function to
+be suspended and then later resumed.
 
-I want to explain what this means in a bit more detail, but before I do
-I want to first give you a recap on what a "normal" C++ function is.
+I will explain what this means in a bit more detail, but before I do I want
+to first review how a "normal" C++ function works.
 
 ## "Normal" Functions
 
@@ -77,7 +76,7 @@ When a function calls another function, the caller must first prepare itself for
 
 This 'suspend' step typically involves saving to memory any values that are currently held in
 CPU registers so that those values can later be restored if required when the function
-resumes execution. Now, depending on the calling convention of the function, the caller
+resumes execution. Depending on the calling convention of the function, the caller
 and callee may coordinate on who saves these register values, but you can still think
 of them as being performed as part of the **Call** operation.
 
@@ -104,7 +103,7 @@ Then the function destroys the activation frame by:
 * Destroying any parameter objects
 * Freeing memory used by the activation-frame
 
-And finally it resumes execution of the caller by:
+And finally, it resumes execution of the caller by:
 * Restoring the activation frame of the caller by setting the stack register
   to point to the activation frame of the caller and restoring any registers
   that might have been clobbered by the function.
@@ -183,16 +182,19 @@ resumption by:
 Once the coroutine has been prepared for resumption, the coroutine is considered 'suspended'.
 
 The coroutine then has the opportunity to execute some additional logic before execution is
-transferred back to the caller/resumer. This ability to execute logic after the coroutine
-enters the 'suspended' state allows the coroutine to be scheduled for resumption without the
-need for synchronisation that would otherwise be required if the coroutine was scheduled
-for resumption prior to entering the 'suspended' state. I'll go into this in more detail in
-future posts.
+transferred back to the caller/resumer. This additional logic is provided access to a handle
+to the coroutine-frame that can be used to later resume or destroy it.
 
-The coroutine can also optionally choose to immediately resume/continue execution of the
-coroutine or can choose to return execution back to the caller/resumer.
+This ability to execute logic after the coroutine enters the 'suspended' state allows the
+coroutine to be scheduled for resumption without the need for synchronisation that would
+otherwise be required if the coroutine was scheduled for resumption prior to entering the
+'suspended' state due to the potential for suspension and resumption of the coroutine to race.
+I'll go into this in more detail in future posts.
 
-When execution returns to the caller/resumer the stack-frame part of the coroutine's
+The coroutine can then choose to either immediately resume/continue execution of the
+coroutine or can choose to transfer execution back to the caller/resumer.
+
+If execution is transferred to the caller/resumer the stack-frame part of the coroutine's
 activation frame is freed and popped off the stack.
 
 ### The 'Resume' operation
@@ -200,8 +202,10 @@ activation frame is freed and popped off the stack.
 The **Resume** operation can be performed on a coroutine that is currently in the
 'suspended' state.
 
-When a function wants to resume a coroutine it calls the coroutine's `void resume()`
-method.
+When a function wants to resume a coroutine it needs to effectively 'call' into
+the middle of a particular invocation of the function. The way the resumer identifies
+the particular invocation to resume is by calling the `void resume()` method on the
+coroutine-frame handle provided to the corresponding **Suspend** operation.
 
 Just like a normal function call, this call to `resume()` will allocate a new
 stack-frame and store the return-address of the caller in the stack-frame before
@@ -232,6 +236,11 @@ last suspend-point it instead transfers execution to an alternative code-path
 that calls the destructors of all local variables in-scope at the suspend-point
 before then freeing the memory used by the coroutine frame.
 
+Similar to the **Resume** operation, the **Destroy** operation identifies the
+particular activation-frame to destroy by calling the `void destroy()` method
+on the coroutine-frame handle provided during the corresponding **Suspend**
+operation.
+
 ### The 'Call' operation of a coroutine
 
 The **Call** operation of a coroutine is much the same as the call operation of a
@@ -255,15 +264,17 @@ that the lifetime of the parameters extends beyond the first suspend-point.
 The **Return** operation of a coroutine is a little different from that of a normal
 function.
 
-When a coroutine executes a **Return** operation it stores the return-value somewhere
-(exactly where this is stored can be customised by the coroutine) and then destructs
-any local variables (but not parameters).
+When a coroutine executes a `return`-statement (`co_return` according to the TS)
+operation it stores the return-value somewhere (exactly where this is stored can
+be customised by the coroutine) and then destructs any in-scope local variables
+(but not parameters).
 
 The coroutine then has the opportunity to execute some additional logic before
 transferring execution back to the caller/resumer.
 
 This additional logic might perform some operation to publish the return value,
-or it might resume another coroutine that was waiting for the result.
+or it might resume another coroutine that was waiting for the result. It's
+completely customisable.
 
 The coroutine then performs either a **Suspend** operation (keeping the
 coroutine-frame alive) or a **Destroy** operation (destroying the coroutine-frame).
@@ -274,7 +285,8 @@ off the stack.
 
 It is important to note that the return-value passed to the **Return** operation is
 not the same as the return-value returned from a **Call** operation as the return
-operation may be executed long after the caller resumed from the **Call** operation.
+operation may be executed long after the caller resumed from the initial **Call**
+operation.
 
 ## An illustration
 
@@ -313,7 +325,8 @@ STACK                     REGISTERS               HEAP
 Then, once the coroutine `x()` has allocated memory for the coroutine frame on the heap
 and copied/moved parameter values into the coroutine frame we'll end up with something
 that looks like the next diagram. Note that the compiler will typically hold the address
-of the coroutine frame in a separate register to the stack pointer (eg. `rax` register).
+of the coroutine frame in a separate register to the stack pointer (eg. MSVC stores this
+in the `rbp` register).
 ```
 STACK                     REGISTERS               HEAP
 +----------------+ <-+
@@ -322,7 +335,7 @@ STACK                     REGISTERS               HEAP
 | ret= f()+0x123 |   |    +------+       |     |  x()      |
 +----------------+   +--- | rsp  |       |     | a =  42   |
 |  f()           |        +------+       |     +-----------+
-+----------------+        | rax  | ------+
++----------------+        | rbp  | ------+
 | ...            |        +------+
 |                |
 ```
@@ -341,7 +354,7 @@ STACK                     REGISTERS               HEAP
 | ret= f()+0x123 |   |    +------+             |  x()      |
 +----------------+   +--- | rsp  |             | a =  42   |
 |  f()           |        +------+             +-----------+
-+----------------+        | rax  |
++----------------+        | rbp  |
 | ...            |        +------+
 |                |
 ```
@@ -357,7 +370,7 @@ STACK                     REGISTERS               HEAP
 | ret= f()+0x123 |   |    +------+       |     |  x()      |
 +----------------+   +--- | rsp  |       |     | a =  42   |
 |  f()           |        +------+       |     | b = 789   |
-+----------------+        | rax  | ------+     +-----------+
++----------------+        | rbp  | ------+     +-----------+
 | ...            |        +------+
 |                |
 ```
@@ -378,7 +391,7 @@ STACK                     REGISTERS               HEAP
                           +------+      |      |  x()      |
 +----------------+ <----- | rsp  |      |      | a =  42   |
 |  f()           |        +------+      |      | b = 789   |
-| handle     ----|---+    | rax  |      |      | RP=x()+99 |
+| handle     ----|---+    | rbp  |      |      | RP=x()+99 |
 | ...            |   |    +------+      |      +-----------+
 |                |   |                  |
 |                |   +------------------+
@@ -403,7 +416,7 @@ STACK                     REGISTERS               HEAP
 | ret= h()+0x87  |   |    +------+       |     |  x()      |
 +----------------+   +--- | rsp  |       |     | a =  42   |
 |  h()           |        +------+       |     | b = 789   |
-| handle         |        | rax  | ------+     +-----------+
+| handle         |        | rbp  | ------+     +-----------+
 +----------------+        +------+
 | ...            |
 |                |
@@ -413,7 +426,7 @@ STACK                     REGISTERS               HEAP
 
 I have described coroutines as being a generalisation of a function that has
 three additional operations - 'Suspend', 'Resume' and 'Destroy' - in addition
-to the 'Call' and 'Return' operations.
+to the 'Call' and 'Return' operations provided by "normal" functions.
 
 I hope that this provides some useful mental framing for how to think of
 coroutines and their control-flow.
