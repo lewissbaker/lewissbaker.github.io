@@ -5,6 +5,7 @@ excerpt:
   and provide a bit of theory about the operations they support. The aim of this post
   is introduce some foundational concepts that will help frame the way you think about
   C++ Coroutines.
+commentIssueId: 1
 ---
 
 This is the first of a series of posts on the [C++ Coroutines TS](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf)
