@@ -8,8 +8,9 @@ excerpt:
 commentIssueId: 1
 ---
 
-This is the first of a series of posts on the [C++ Coroutines TS](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf)
-that is currently on track for inclusion into the C++20 language standard.
+This is the first of a series of posts on the [C++ Coroutines TS](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf), a new
+language feature that is currently on track for inclusion into the
+C++20 language standard.
 
 In this series I will cover how the underlying mechanics of C++ Coroutines
 work as well as show how they can be used to build useful higher-level abstractions
