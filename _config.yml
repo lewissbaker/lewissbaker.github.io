@@ -11,6 +11,7 @@ url: "https://lewissbaker.github.io" # the base hostname & protocol for your sit
 twitter_username: lewissbaker
 github_username:  lewissbaker
 repository: lewissbaker/lewissbaker.github.io
+google_analytics: UA-107310540-1
 
 show_downloads: false
 
