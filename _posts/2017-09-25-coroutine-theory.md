@@ -184,7 +184,7 @@ resumption by:
 Once the coroutine has been prepared for resumption, the coroutine is considered 'suspended'.
 
 The coroutine then has the opportunity to execute some additional logic before execution is
-transferred back to the caller/resumer. This additional logic is provided access to a handle
+transferred back to the caller/resumer. This additional logic is given access to a handle
 to the coroutine-frame that can be used to later resume or destroy it.
 
 This ability to execute logic after the coroutine enters the 'suspended' state allows the
