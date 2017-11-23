@@ -458,6 +458,35 @@ should continue without suspending.
 Ideally we'd also like to make it `noexcept`, require no heap allocations and have a
 lock-free implementation.
 
+**Edit 2017/11/23: Added example usage for `async_manual_reset_event`**
+
+Example usage should look something like this:
+```c++
+T value;
+async_manual_reset_event event;
+
+// A single call to produce a value
+void producer()
+{
+  value = some_long_running_computation();
+
+  // Publish the value by setting the event.
+  event.set();
+}
+
+// Supports multiple concurrent consumers
+task<> consumer()
+{
+  // Wait until the event is signalled by call to event.set()
+  // in the producer() function.
+  co_await event;
+
+  // Now it's safe to consume 'value'
+  // This is guaranteed to 'happen after' assignment to 'value'
+  std::cout << value << std::endl;
+}
+```
+
 Let's first think about the possible states this event can be in: 'not set' and 'set'.
 
 When it's in the 'not set' state there is a (possibly empty) list of waiting coroutines
@@ -649,7 +678,7 @@ void async_manual_reset_event::reset() noexcept
 With the `set()` method, we want to transition to the 'set' state by exchanging
 the current state with the special 'set' value, `this`, and then examine what
 the old value was. If there were any waiting coroutines then we want to resume
-them before returning.
+each of them sequentially in turn before returning.
 ```c++
 void async_manual_reset_event::set() noexcept
 {
@@ -703,7 +732,8 @@ This post has looked at how the `operator co_await` is implemented and defined
 in terms of the **Awaitable** and **Awaiter** concepts.
 
 It has also walked through how to implement an awaitable async thread-synchronisation
-primitive that takes advantage of 
+primitive that takes advantage of the fact that awaiter objects are allocated on the
+coroutine frame to avoid additional heap allocations.
 
 I hope this post has helped to demystify the new `co_await` operator for you.
 
