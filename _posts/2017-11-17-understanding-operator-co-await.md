@@ -739,3 +739,11 @@ I hope this post has helped to demystify the new `co_await` operator for you.
 
 In the next post I'll explore the **Promise** concept and how a coroutine-type author
 can customise the behaviour of their coroutine.
+
+## Thanks
+
+I want to call out special thanks to Gor Nishanov for patiently and enthusiastically
+answering my many questions on coroutines over the last couple of years.
+
+And also to Eric Niebler for reviewing and providing feedback on an early draft of
+this post.
