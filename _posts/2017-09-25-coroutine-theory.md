@@ -113,7 +113,7 @@ And finally, it resumes execution of the caller by:
   'Call' operation.
 
 Note that as with the 'Call' operation, some calling conventions may split
-the repsonsiblities of the 'Return' operation across both the caller and
+the repsonsibilities of the 'Return' operation across both the caller and
 callee function's instructions.
 
 ## Coroutines
