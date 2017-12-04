@@ -392,7 +392,7 @@ facilities such as Win32 fibers or boost::context.
 
 With many of the stackful coroutine frameworks, the suspend operation of a coroutine is
 combined with the resumption of another coroutine into a 'context-switch' operation.
-With this 'context-switch' operation there is typcially no opportunity to execute logic
+With this 'context-switch' operation there is typically no opportunity to execute logic
 after suspending the current coroutine but before transferring execution to another coroutine.
 
 This means that if we want to implement a similar async-file-read operation on top of
