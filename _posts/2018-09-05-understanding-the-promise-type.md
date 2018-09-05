@@ -1,5 +1,5 @@
 ---
-title: Coroutines and Promises
+title: "C++ Coroutines: Understanding the promise type"
 excerpt:
   In this post I look at the mechanics of how the compiler translates coroutine code that
   you write into compiled code and how you can customise the behaviour of a coroutine by
