@@ -4,7 +4,7 @@ excerpt:
   Understanding how the `co_await` operator works can help to demystify the behaviour of
   coroutines and how they are suspended and resumed.
   In this post I will be explaining the mechanics of the `co_await` operator and introduce
-  the related **Awaitable** and **Awaiter** type concepts.
+  the related 'Awaitable' and 'Awaiter' type concepts.
 commentIssueId: 2
 ---
 
