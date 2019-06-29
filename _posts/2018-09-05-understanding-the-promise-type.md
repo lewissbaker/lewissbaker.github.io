@@ -169,6 +169,7 @@ struct my_promise_type
   {
     void* ptr = my_custom_allocate(size);
     if (!ptr) throw std::bad_alloc{};
+    return ptr;
   }
 
   void operator delete(void* ptr, std::size_t size)
