@@ -340,19 +340,19 @@ on the task's `std::coroutine_handle`.
 Thus the stack will look something like this when `loop_synchronously()` starts:
 ```
            Stack                                                   Heap
-+--------------------------------+  <-- top of stack   +--------------------------+
-| loop_synchronously$resume      | active coroutine -> | loop_synchronously frame |
-+--------------------------------+                     | +----------------------+ |
-| coroutine_handle::resume()     |                     | | task::promise        | |
-+--------------------------------+                     | | - continuation --.   | |
-| task::awaiter::await_suspend() |                     | +------------------|---+ |
-+--------------------------------+                     | ...                |     |
-| awaiting_coroutine$resume      |                     +--------------------|-----+
-+--------------------------------+                                          V
-|  ....                          |                     +--------------------------+
-+--------------------------------+                     | awaiting_coroutine frame |
-                                                       |                          |
-                                                       +--------------------------+
++------------------------------+  <-- top of stack   +--------------------------+
+| loop_synchronously$resume    | active coroutine -> | loop_synchronously frame |
++------------------------------+                     | +----------------------+ |
+| coroutine_handle::resume     |                     | | task::promise        | |
++------------------------------+                     | | - continuation --.   | |
+| task::awaiter::await_suspend |                     | +------------------|---+ |
++------------------------------+                     | ...                |     |
+| awaiting_coroutine$resume    |                     +--------------------|-----+
++------------------------------+                                          V
+|  ....                        |                     +--------------------------+
++------------------------------+                     | awaiting_coroutine frame |
+                                                     |                          |
+                                                     +--------------------------+
 ```
 
 > Note: When a coroutine function is compiled the compiler typically splits it into
@@ -380,34 +380,33 @@ The net result of all of this is that if we look at the state of the program jus
 `loop_synchronously()` coroutine is resumed and just before the temporary `task` returned by
 `completes_synchronously()` is destroyed at the semicolon then the stack/heap should look
 something like this:
-
 ```
            Stack                                                   Heap
-+---------------------------------+ <-- top of stack
-| loop_synchronously$resume       | active coroutine -.
-+---------------------------------+                   |
-| coroutine_handle::resume()      |                .--'
-+---------------------------------+                |
-| final_awaiter::await_suspend()  |                |
-+---------------------------------+                | +--------------------------+ <-.
-| completes_synchronously$resume  |                | | completes_synchronously  |   |
-+---------------------------------+                | | frame                    |   |
-| coroutine_handle::resume()      |                | +--------------------------+   |
-+---------------------------------+                '--.                             |
-| task::awaiter::await_suspend()  |                   V                             |
-+---------------------------------+ <-- prev top of  +--------------------------+   |
-| loop_synchronously$resume       |      stack       | loop_synchronously frame |   |
-+---------------------------------+                  | +----------------------+ |   |
-| coroutine_handle::resume()      |                  | | task::promise        | |   |
-+---------------------------------+                  | | - continuation --.   | |   |
-| task::awaiter::await_suspend()  |                  | +------------------|---+ |   |
-+---------------------------------+                  | - task temporary --|---------'
-| awaiting_coroutine$resume       |                  +--------------------|-----+
-+---------------------------------+                                       V
-|  ....                           |                  +--------------------------+
-+---------------------------------+                  | awaiting_coroutine frame |
-                                                     |                          |
-                                                     +--------------------------+
++-------------------------------+ <-- top of stack
+| loop_synchronously$resume     | active coroutine -.
++-------------------------------+                   |
+| coroutine_handle::resume      |            .------'
++-------------------------------+            |
+| final_awaiter::await_suspend  |            |
++-------------------------------+            |  +--------------------------+ <-.
+| completes_synchronously$resume|            |  | completes_synchronously  |   |
++-------------------------------+            |  | frame                    |   |
+| coroutine_handle::resume      |            |  +--------------------------+   |
++-------------------------------+            '---.                             |
+| task::awaiter::await_suspend  |                V                             |
++-------------------------------+ <-- prev top  +--------------------------+   |
+| loop_synchronously$resume     |     of stack  | loop_synchronously frame |   |
++-------------------------------+               | +----------------------+ |   |
+| coroutine_handle::resume      |               | | task::promise        | |   |
++-------------------------------+               | | - continuation --.   | |   |
+| task::awaiter::await_suspend  |               | +------------------|---+ |   |
++-------------------------------+               | - task temporary --|---------'
+| awaiting_coroutine$resume     |               +--------------------|-----+
++-------------------------------+                                    V
+|  ....                         |               +--------------------------+
++-------------------------------+               | awaiting_coroutine frame |
+                                                |                          |
+                                                +--------------------------+
 ```
 
 Then the next thing this will do is call the `task` destructor which will destroy the
@@ -890,19 +889,19 @@ a call to `std::coroutine_handle::resume()`.
 Thus the stack will look something like this when `loop_synchronously()` starts:
 ```
            Stack                                                Heap
-+-----------------------------+  <-- top of stack   +--------------------------+
-| loop_synchronously$resume   | active coroutine -> | loop_synchronously frame |
-+-----------------------------+                     | +----------------------+ |
-| coroutine_handle::resume()  |                     | | task::promise        | |
-+-----------------------------+                     | | - continuation --.   | |
-|     ...                     |                     | +------------------|---+ |
-+-----------------------------+                     | ...                |     |
-                                                    +--------------------|-----+
-                                                                         V
-                                                    +--------------------------+
-                                                    | awaiting_coroutine frame |
-                                                    |                          |
-                                                    +--------------------------+
++---------------------------+  <-- top of stack   +--------------------------+
+| loop_synchronously$resume | active coroutine -> | loop_synchronously frame |
++---------------------------+                     | +----------------------+ |
+| coroutine_handle::resume  |                     | | task::promise        | |
++---------------------------+                     | | - continuation --.   | |
+|     ...                   |                     | +------------------|---+ |
++---------------------------+                     | ...                |     |
+                                                  +--------------------|-----+
+                                                                       V
+                                                  +--------------------------+
+                                                  | awaiting_coroutine frame |
+                                                  |                          |
+                                                  +--------------------------+
 ```
 
 Now, when it executes `co_await completes_synchronously()` it will perform a symmetric
@@ -917,30 +916,30 @@ It does this by:
 If we now look at the stack just after `completes_synchronously` is resumed it will now
 look like this:
 ```
-              Stack                                               Heap
-                                                  .-> +--------------------------+ <-.
-                                                  |   | completes_synchronously  |   |
-                                                  |   | frame                    |   |
-                                                  |   | +----------------------+ |   |
-                                                  |   | | task::promise        | |   |
-                                                  |   | | - continuation --.   | |   |
-                                                  |   | +------------------|---+ |   |
-                                                  '-, +--------------------|-----+   |
-                                                    |                      V         |
-+-------------------------------+ <-- top of stack  | +--------------------------+   |
-| completes_synchronously$resume| active coroutine -` | loop_synchronously frame |   | 
-+-------------------------------+                     | +----------------------+ |   |
-| coroutine_handle::resume()    |                     | | task::promise        | |   |
-+-------------------------------+                     | | - continuation --.   | |   |
-|     ...                       |                     | +------------------|---+ |   |
-+-------------------------------+                     | task temporary     |     |   |
-                                                      | - coro_       -----|---------` 
-                                                      +--------------------|-----+
-                                                                           V
-                                                      +--------------------------+
-                                                      | awaiting_coroutine frame |
-                                                      |                          |
-                                                      +--------------------------+
+              Stack                                          Heap
+                                            .-> +--------------------------+ <-.
+                                            |   | completes_synchronously  |   |
+                                            |   | frame                    |   |
+                                            |   | +----------------------+ |   |
+                                            |   | | task::promise        | |   |
+                                            |   | | - continuation --.   | |   |
+                                            |   | +------------------|---+ |   |
+                                            `-, +--------------------|-----+   |
+                                              |                      V         |
++-------------------------------+ <-- top of  | +--------------------------+   |
+| completes_synchronously$resume|     stack   | | loop_synchronously frame |   |
++-------------------------------+ active -----' | +----------------------+ |   |
+| coroutine_handle::resume      | coroutine     | | task::promise        | |   |
++-------------------------------+               | | - continuation --.   | |   |
+|     ...                       |               | +------------------|---+ |   |
++-------------------------------+               | task temporary     |     |   |
+                                                | - coro_       -----|---------`
+                                                +--------------------|-----+
+                                                                     V
+                                                +--------------------------+
+                                                | awaiting_coroutine frame |
+                                                |                          |
+                                                +--------------------------+
 ```
 
 Note that the number of stack-frames has not grown here.
@@ -989,19 +988,19 @@ This will destroy the coroutine-frame, freeing its memory
 and leaving us with the following sitution:
 ```
            Stack                                                   Heap
-+----------------------------+  <-- top of stack   +--------------------------+
-| loop_synchronously$resume  | active coroutine -> | loop_synchronously frame |
-+----------------------------+                     | +----------------------+ |
-| coroutine_handle::resume() |                     | | task::promise        | |
-+----------------------------+                     | | - continuation --.   | |
-|     ...                    |                     | +------------------|---+ |
-+----------------------------+                     | ...                |     |
-                                                   +--------------------|-----+
-                                                                        V
-                                                   +--------------------------+
-                                                   | awaiting_coroutine frame |
-                                                   |                          |
-                                                   +--------------------------+
++---------------------------+  <-- top of stack   +--------------------------+
+| loop_synchronously$resume | active coroutine -> | loop_synchronously frame |
++---------------------------+                     | +----------------------+ |
+| coroutine_handle::resume  |                     | | task::promise        | |
++---------------------------+                     | | - continuation --.   | |
+|     ...                   |                     | +------------------|---+ |
++---------------------------+                     | ...                |     |
+                                                  +--------------------|-----+
+                                                                       V
+                                                  +--------------------------+
+                                                  | awaiting_coroutine frame |
+                                                  |                          |
+                                                  +--------------------------+
 ```
 
 We are now back to executing the `loop_synchronously` coroutine and we now have
