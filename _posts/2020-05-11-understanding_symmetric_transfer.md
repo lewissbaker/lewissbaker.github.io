@@ -10,7 +10,7 @@ excerpt:
 
   In this post will attempt to explain the stack-overflow problem and how the addition
   of this key "symmetric transfer" capability lets us solve this problem.
-commentIssueId: 4
+commentIssueId: 5
 ---
 
 The Coroutines TS provided a wonderful way to write asynchronous code as if you
