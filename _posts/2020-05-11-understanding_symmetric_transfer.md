@@ -299,7 +299,7 @@ task::awaiter task::operator co_await() && noexcept {
 
 And thus completes the code necessary for a functional `task` type.
 
-You can see the complete set of code in Compiler Explorer here: https://godbolt.org/z/-Kw6Nf
+You can see the complete set of code in Compiler Explorer here: [https://godbolt.org/z/-Kw6Nf](https://godbolt.org/z/-Kw6Nf)
 
 ## The stack-overflow problem
 
@@ -324,7 +324,7 @@ With the naive `task` implementation described above, the `loop_synchronously()`
 will (probably) work fine when `count` is 10, 1000, or even 100'000. But there will be a value
 that you can pass that will eventually cause this coroutine to start crashing.
 
-For example, see: https://godbolt.org/z/gy5Q8q which crashes when `count` is 1'000'000.
+For example, see: [https://godbolt.org/z/gy5Q8q](https://godbolt.org/z/gy5Q8q) which crashes when `count` is 1'000'000.
 
 The reason that this is crashing is because of stack-overflow.
 
@@ -491,7 +491,7 @@ void task::promise_type::final_awaiter::await_suspend(
 }
 ```
 
-See the updated example on Compiler Explorer: https://godbolt.org/z/7fm8Za
+See the updated example on Compiler Explorer: [https://godbolt.org/z/7fm8Za](https://godbolt.org/z/7fm8Za)
 Note how it no longer crashes when executing the `count == 1'000'000` case.
 
 This turns out to be the approach that the `cppcoro::task<T>`
@@ -1011,7 +1011,7 @@ Thus we can perform as many iterations of the loop as we want and will only use
 a constant amount of storage space.
 
 For a full example of the symmetric-transfer version of the `task` type see the
-following Compiler Explorer link: https://godbolt.org/z/9baieF
+following Compiler Explorer link: [https://godbolt.org/z/9baieF](https://godbolt.org/z/9baieF).
 
 ## Symmetric Transfer as the Universal Form of await_suspend
 
