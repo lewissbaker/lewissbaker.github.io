@@ -806,7 +806,7 @@ void __g_destroy(__coroutine_state* s);
 struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
     __g_state(int&& __x)
     : x(static_cast<int&&>(__x)) {
-        // Initialise the function-pointers used by coroutine_handle::resume/destroy/done().
+        // Initialise the function-pointers used by coroutine_handle methods.
         this->__resume = &__g_resume;
         this->__destroy = &__g_destroy;
 
@@ -1027,20 +1027,21 @@ with the exception. Let's look at implementing this aspect next.
 
 The specification for coroutine definitions [`[dcl.fct.def.coroutine]`](https://eel.is/c++draft/dcl.fct.def.coroutine)
 says that the coroutine behaves as if its function-body were replaced by:
+
 ```c++
 {
-   promise-type promise promise-constructor-arguments ;
-   try {
-      co_await promise.initial_suspend() ;
-      function-body
-   } catch ( ... ) {
-      if (!initial-await-resume-called)
-         throw ;
-      promise.unhandled_exception() ;
-   }
+    promise-type promise promise-constructor-arguments ;
+    try {
+        co_await promise.initial_suspend() ;
+        function-body
+    } catch ( ... ) {
+        if (!initial-await-resume-called)
+            throw ;
+        promise.unhandled_exception() ;
+    }
 final-suspend :
-   co_await promise.final_suspend() ;
-} 
+    co_await promise.final_suspend() ;
+}
 ```
 
 We have already handled the `initial-await_resume-called` branch separately in the ramp function,
@@ -1204,7 +1205,8 @@ suspend_point_0:
                 coro_to_resume = state->__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
 
-                // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
+                // A coroutine suspends without exiting scopes.
+                // So cancel the destructor-guards.
                 tmp3_dtor.cancel();
                 tmp2_dtor.cancel();
 
@@ -1212,9 +1214,11 @@ suspend_point_0:
             }
 
             // Don't exit the scope here.
-            // We can't 'goto' a label that enters the scope of a variable with a non-trivial
-            // destructor. So we have to exit the scope of the destructor guards here without
-            // calling the destructors and then recreate them after the `suspend_point_1` label.
+            //
+            // We can't 'goto' a label that enters the scope of a variable with a
+            // non-trivial destructor. So we have to exit the scope of the destructor
+            // guards here without calling the destructors and then recreate them after
+            // the `suspend_point_1` label.
             tmp3_dtor.cancel();
             tmp2_dtor.cancel();
         }
@@ -1336,7 +1340,7 @@ struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
     manual_lifetime<std::suspend_always> __tmp1;
     manual_lifetime<task> __tmp2;
     manual_lifetime<task::awaiter> __tmp3;
-    manual_lifetime<task::promise_type::final_awaiter> __tmp4; // temporary result of final_suspend()
+    manual_lifetime<task::promise_type::final_awaiter> __tmp4; // <---
 };
 ```
 
@@ -1413,13 +1417,13 @@ The problems with this were discussed in more detail in the previous blog post s
 want to understand the problem more deeply please take a look at the post
 [C++ Coroutines: Understanding Symmetric Transfer](https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer).
 
-The specification for `[expr.await]` gives a little hint about how we should be handling the
-coroutine-handle-returning flavour of `await_suspend`:
+The specification for [\[expr.await\]](https://eel.is/c++draft/expr.await) gives a little hint about
+how we should be handling the coroutine-handle-returning flavour of `await_suspend`:
 > If the type of _await-suspend_ is `std​::​coroutine_­handle<Z>`, _await-suspend_`.resume()` is evaluated.
 > 
 > [_Note_ 1: This resumes the coroutine referred to by the result of _await-suspend_.
 > Any number of coroutines can be successively resumed in this fashion, eventually returning control
-> flow to the current coroutine caller or resumer (`[dcl.fct.def.coroutine]`). —- _end note_]
+> flow to the current coroutine caller or resumer ([\[dcl.fct.def.coroutine\]](https://eel.is/c++draft/dcl.fct.def.coroutine)). —- _end note_]
 
 The note there, while non-normative and thus non-binding, is strongly encouraging compilers to 
 implement this in such a way that it performs a tail-call to resume the next coroutine rather
@@ -1674,7 +1678,7 @@ void __g_destroy(__coroutine_state* s);
 struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
     __g_state(int&& x)
     : x(static_cast<int&&>(x)) {
-        // Initialise the function-pointers used by coroutine_handle::resume/destroy/done().
+        // Initialise the function-pointers used by coroutine_handle methods.
         this->__resume = &__g_resume;
         this->__destroy = &__g_destroy;
 
@@ -1767,7 +1771,8 @@ suspend_point_0:
                 auto h = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
 
-                // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
+                // A coroutine suspends without exiting scopes.
+                // So cancel the destructor-guards.
                 tmp3_dtor.cancel();
                 tmp2_dtor.cancel();
 
@@ -1775,9 +1780,10 @@ suspend_point_0:
             }
 
             // Don't exit the scope here.
-            // We can't 'goto' a label that enters the scope of a variable with a non-trivial
-            // destructor. So we have to exit the scope of the destructor guards here without
-            // calling the destructors and then recreate them after the `suspend_point_1` label.
+            // We can't 'goto' a label that enters the scope of a variable with a
+            // non-trivial destructor. So we have to exit the scope of the destructor
+            // guards here without calling the destructors and then recreate them after
+            // the `suspend_point_1` label.
             tmp3_dtor.cancel();
             tmp2_dtor.cancel();
         }
@@ -1857,18 +1863,15 @@ destroy_state:
 
 ```
 
-For a fully compilable version of the final code, see: https://godbolt.org/z/xaj3Yxabn
-
-For a comparison of how the generated code compares to how clang compiles
-the same coroutine, see: 
-
+For a fully compilable version of the final code, see:
+[https://godbolt.org/z/xaj3Yxabn](https://godbolt.org/z/xaj3Yxabn)
 
 This concludes the 5-part series on understanding the mechanics of C++ coroutines.
 
 This is probably more information than you ever wanted to know about coroutines, but
-hopefully it helps someone to understand what's going on under the hood and demystifies
+hopefully it helps you to understand what's going on under the hood and demystifies
 them just a bit.
 
 Thanks for making it through to the end!
 
-
+Until next time, Lewis.
