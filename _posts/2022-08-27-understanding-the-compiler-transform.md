@@ -1,9 +1,9 @@
 ---
 title: "C++ Coroutines: Understanding the Compiler Transform"
 excerpt:
-  In this post I am going to try to go a bit deeper to show how all the concepts from
-  the previous posts come together and to show what happens when a coroutine reaches
-  a suspend-point by walking through the lowering of a coroutine manually into equivalent
+  In this post I am going to go a bit deeper to show how all the concepts from
+  the previous posts come together. I'll show what happens when a coroutine reaches
+  a suspend-point by walking through the lowering of a coroutine into equivalent
   non-coroutine, imperative C++ code.
 commentIssueId: 6
 ---
@@ -14,20 +14,21 @@ Previous blogs in the series on "Understanding C++ Coroutines" talked about the 
 kinds of transforms the compiler performs on a coroutine and its `co_await`, `co_yield`
 and `co_return` expressions. These posts described how each expression was lowered by
 the compiler to calls to various customisation points/methods on user-defined types.
+
 1. [Coroutine Theory](https://lewissbaker.github.io/2017/09/25/coroutine-theory)
 2. [C++ Coroutines: Understanding operator co_await](https://lewissbaker.github.io/2017/11/17/understanding-operator-co-await)
 3. [C++ Coroutines: Understanding the promise type](https://lewissbaker.github.io/2018/09/05/understanding-the-promise-type)
 4. [C++ Coroutines: Understanding Symmetric Transfer](https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer)
 
 However, there was one part of these descriptions that may have left you unsatisfied.
-The all simply hand-waved over the concept of a "suspend-point" and said something
+The all hand-waved over the concept of a "suspend-point" and said something vague
 like "the coroutine suspends here" and "the coroutine resumes here" but didn't really
 go into detail about what that actually means or how it might be implemented by the
 compiler.
 
-In this post I am going to try to go a bit deeper to show how all the concepts from
-the previous posts come together and to show what happens when a coroutine reaches
-a suspend-point by walking through the lowering of a coroutine manually into equivalent
+In this post I am going to go a bit deeper to show how all the concepts from
+the previous posts come together. I'll show what happens when a coroutine reaches
+a suspend-point by walking through the lowering of a coroutine into equivalent
 non-coroutine, imperative C++ code.
 
 Note that I am not going to describe exactly how a particular compiler lowers coroutines
