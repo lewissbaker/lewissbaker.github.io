@@ -17,6 +17,9 @@ layout: default
   </header>
 
   <div class="post-content" itemprop="articleBody">
+    {% if page.enable_toc %}
+      {% include toc.html html=content %}
+    {% endif %}
     {{ content }}
   </div>
 

@@ -6,6 +6,7 @@ excerpt:
   a suspend-point by walking through the lowering of a coroutine into equivalent
   non-coroutine, imperative C++ code.
 commentIssueId: 6
+enable_toc: true
 ---
 
 # Introduction
