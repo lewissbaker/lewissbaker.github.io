@@ -82,7 +82,8 @@ public:
 
         struct final_awaiter {
             bool await_ready() noexcept;
-            std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type>) noexcept;
+            std::coroutine_handle<> await_suspend(
+                std::coroutine_handle<promise_type> h) noexcept;
             void await_resume() noexcept;
         };
 
@@ -105,7 +106,8 @@ public:
     struct awaiter {
         explicit awaiter(std::coroutine_handle<promise_type> h) noexcept;
         bool await_ready() noexcept;
-        std::coroutine_handle<promise_type> await_suspend(std::coroutine_handle<> h) noexcept;
+        std::coroutine_handle<promise_type> await_suspend(
+            std::coroutine_handle<> h) noexcept;
         int await_resume();
     private:
         std::coroutine_handle<promise_type> coro_;
