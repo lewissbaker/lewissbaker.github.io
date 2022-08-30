@@ -501,7 +501,7 @@ When a coroutine suspends, it needs to make sure it resumes at the same point in
 control flow that it suspended at.
 
 It also needs to keep track of which objects with automatic-storage duration are alive
-at each suspend-point so that it knows what needs to be destoyed if the coroutine is
+at each suspend-point so that it knows what needs to be destroyed if the coroutine is
 destroyed instead of being resumed.
 
 One way to implement this is to assign each suspend-point in the coroutine a unique number
@@ -1122,8 +1122,9 @@ catching the exception.
 
 Note that we cannot simply catch the exception, call the destructors and rethrow the exception
 here as this would change the behaviour of those destructors if they were to call
-`std::unhandled_exceptions()` since the exception would be "handled", however in the destructor
-calls during unwind, the call to `std:::unhandled_exceptions()` should return non-zero.
+`std::unhandled_exceptions()` since the exception would be "handled". However if the
+destructor calls this during exception unwind, then call to `std:::unhandled_exceptions()`
+should return non-zero.
 
 We can instead define an RAII helper class to ensure that the destructors get called on scope
 exit in the case an exception is thrown.
@@ -1151,7 +1152,7 @@ private:
     manual_lifetime<T>* ptr_;
 };
 
-// Parital specialisation for types that don't need their destructors called.
+// Partial specialisation for types that don't need their destructors called.
 template<typename T>
     requires std::is_trivially_destructible_v<T>
 struct destructor_guard<T> {
@@ -1473,7 +1474,7 @@ void std::coroutine_handle<void>::resume() const {
     __coroutine_state* s = state_;
     do {
         s = s->__resume(s);
-    } while (/* some condition */)
+    } while (/* some condition */);
 }
 ```
 
@@ -1610,7 +1611,7 @@ save space in the coroutine-state by reusing the storage of an object for the ne
 its lifetime has ended.
 
 To be able to take advantage of this we can instead define the data-members in an anonymous
-union where appropriate
+union where appropriate.
 
 Looking at the lifetimes of the temporary varaibles we have:
 - `__tmp1` - exists only within `co_await promise.initial_suspend();` statement
