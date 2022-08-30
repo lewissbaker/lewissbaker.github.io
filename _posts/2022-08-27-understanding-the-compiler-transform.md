@@ -15,10 +15,10 @@ kinds of transforms the compiler performs on a coroutine and its `co_await`, `co
 and `co_return` expressions. These posts described how each expression was lowered by
 the compiler to calls to various customisation points/methods on user-defined types.
 
-1. [Coroutine Theory](https://lewissbaker.github.io/2017/09/25/coroutine-theory)
-2. [C++ Coroutines: Understanding operator co_await](https://lewissbaker.github.io/2017/11/17/understanding-operator-co-await)
-3. [C++ Coroutines: Understanding the promise type](https://lewissbaker.github.io/2018/09/05/understanding-the-promise-type)
-4. [C++ Coroutines: Understanding Symmetric Transfer](https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer)
+1. [Coroutine Theory]({{ '/2017/09/25/coroutine-theory' | relative_url }})
+2. [C++ Coroutines: Understanding operator co_await]({{ '/2017/11/17/understanding-operator-co-await' | relative_url }})
+3. [C++ Coroutines: Understanding the promise type]({{ '/2018/09/05/understanding-the-promise-type' | relative_url }})
+4. [C++ Coroutines: Understanding Symmetric Transfer]({{ '/2020/05/11/understanding_symmetric_transfer' | relative_url }})
 
 However, there was one part of these descriptions that may have left you unsatisfied.
 The all hand-waved over the concept of a "suspend-point" and said something vague
@@ -120,7 +120,7 @@ private:
 ```
 
 The structure of this task type should be familiar to those that have read the
-[C++ Coroutines: Understanding Symmetric Transfer](https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer) post.
+[C++ Coroutines: Understanding Symmetric Transfer]({{ '/2020/05/11/understanding_symmetric_transfer' | relative_url }}) post.
 
 # Step 1: Determining the promise type
 
@@ -1416,7 +1416,7 @@ It turns out there is actually a problem with the way we have implemented our `_
 
 The problems with this were discussed in more detail in the previous blog post so if you
 want to understand the problem more deeply please take a look at the post
-[C++ Coroutines: Understanding Symmetric Transfer](https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer).
+[C++ Coroutines: Understanding Symmetric Transfer]({{ '/2020/05/11/understanding_symmetric_transfer' | relative_url }}).
 
 The specification for [\[expr.await\]](https://eel.is/c++draft/expr.await) gives a little hint about
 how we should be handling the coroutine-handle-returning flavour of `await_suspend`:

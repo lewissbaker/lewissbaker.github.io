@@ -8,7 +8,7 @@ excerpt:
 commentIssueId: 2
 ---
 
-In the previous post on [Coroutine Theory](https://lewissbaker.github.io/2017/09/25/coroutine-theory)
+In the previous post on [Coroutine Theory]({{ '/2017/09/25/coroutine-theory' | relative_url }})
 I described the high-level differences between functions and coroutines but without
 going into any detail on syntax and semantics of coroutines as described by the
 C++ Coroutines TS ([N4680](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf)).
