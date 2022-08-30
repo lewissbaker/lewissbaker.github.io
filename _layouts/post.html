@@ -13,6 +13,7 @@ layout: default
       {% if page.author %}
         • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">{{ page.author }}</span></span>
       {% endif %}</p>
+      <script language="JavaScript" src="{{ '/assets/js/anchor-4.3.1.min.js' | relative_url }}"></script>
   </header>
 
   <div class="post-content" itemprop="articleBody">
@@ -34,4 +35,7 @@ layout: default
   {% if site.disqus.shortname %}
     {% include disqus_comments.html %}
   {% endif %}
+  <script language="JavaScript">
+    anchors.add('.post-content h1, .post-content h2');
+  </script>
 </article>
