@@ -1743,8 +1743,6 @@ task g(int x) {
 __coroutine_state* __g_resume(__coroutine_state* s) {
     auto* state = static_cast<__g_state*>(s);
 
-    std::coroutine_handle<void> coro_to_resume;
-
     try {
         switch (state->__suspend_point) {
         case 0: goto suspend_point_0;
