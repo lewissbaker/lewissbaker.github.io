@@ -297,7 +297,7 @@ Once all of the parameters have been copied into the coroutine frame, the corout
 then constructs the promise object.
 
 The reason the parameters are copied prior to the promise object being constructed
-is to allow the promise object to be given access to the post-copied parameters
+is to allow the promise object to be given access to the pre-copied parameters
 in its constructor.
 
 First, the compiler checks to see if there is an overload of the promise constructor
@@ -327,7 +327,7 @@ to the caller.
 You can think of the control flow going something (very roughly) like this:
 ```c++
 // Pretend there's a compiler-generated structure called 'coroutine_frame'
-// that holds all of the state needed for the coroutine. It's constructor
+// that holds all of the state needed for the coroutine. Its constructor
 // takes a copy of parameters and default-constructs a promise object.
 struct coroutine_frame { ... };
 
