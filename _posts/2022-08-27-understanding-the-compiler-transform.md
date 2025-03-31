@@ -217,7 +217,7 @@ Thus the coroutine-state constructor might look something like this:
 struct __g_state {
     __g_state(int&& x)
     : x(static_cast<int&&>(x))
-    , __promise(construct_promise<__g_promise_t>(x))
+    , __promise(construct_promise<__g_promise_t>(this->x))
     {}
 
     int x;
