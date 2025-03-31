@@ -327,7 +327,7 @@ to the caller.
 You can think of the control flow going something (very roughly) like this:
 ```c++
 // Pretend there's a compiler-generated structure called 'coroutine_frame'
-// that holds all of the state needed for the coroutine. It's constructor
+// that holds all of the state needed for the coroutine. Its constructor
 // takes a copy of parameters and default-constructs a promise object.
 struct coroutine_frame { ... };
 
