@@ -297,7 +297,7 @@ namespace std::experimental
 }
 ```
 
-When implementing **Awaitable** types, they key method you'll be using on `coroutine_handle`
+When implementing **Awaitable** types, the key method you'll be using on `coroutine_handle`
 will be `.resume()`, which should be called when the operation has completed and you want
 to resume execution of the awaiting coroutine. Calling `.resume()` on a `coroutine_handle`
 reactivates a suspended coroutine at the `<resume-point>`. The call to `.resume()` will
